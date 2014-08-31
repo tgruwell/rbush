@@ -530,7 +530,6 @@ function multiSelect(arr, left, right, n, compare) {
 }
 
 function multiSelect2(arr, left, right, n, compare) {
-    // debugger;
     var startLeft = left,
         stack = [left, right],
         k, p, k1;
@@ -548,32 +547,35 @@ function multiSelect2(arr, left, right, n, compare) {
 
         if (k === 1) {
             // console.log('selecting ' + (startLeft + k1 * n) + ' between ' + left + ' & ' + right);
-            // console.count('select');
             select(arr, left, right, startLeft + k1 * n, compare);
             continue;
         }
 
         p = Math.floor((left + right) / 2);
-        p = partition(arr, left, right, p, compare);
+
+        var t = arr[p],
+            i = left;
+
+        swap(arr, left, p);
+        if (compare(arr[right], t) > 0) swap(arr, left, right);
+
+        p = right;
+        while (i < p) {
+            swap(arr, i, p);
+            i++;
+            p--;
+            while (compare(arr[i], t) < 0) i++;
+            while (compare(arr[p], t) > 0) p--;
+        }
+
+        if (compare(arr[left], t) === 0) swap(arr, left, p);
+        else {
+            p++;
+            swap(arr, p, right);
+        }
 
         stack.push(left, p - 1, p + 1, right);
     }
-}
-
-function partition(arr, left, right, pivot, compare) {
-    var value = arr[pivot];
-
-    swap(arr, pivot, right);
-
-    for (var i = left; i < right; i++) {
-        if (compare(arr[i], value) < 0) {
-            swap(arr, i, left);
-            left++;
-        }
-    }
-    swap(arr, right, left);
-
-    return left;
 }
 
 // sort array between left and right (inclusive) so that the smallest k elements come first (unordered)
