@@ -220,13 +220,13 @@ rbush.prototype = {
             N1 = N2 * Math.ceil(Math.sqrt(M)),
             i, j, right2, right3;
 
-        multiSelect(items, left, right, N1, this.compareMinX);
+        multiSelect2(items, left, right, N1, this.compareMinX);
 
         for (i = left; i <= right; i += N1) {
 
             right2 = Math.min(i + N1 - 1, right);
 
-            multiSelect(items, i, right2, N2, this.compareMinY);
+            multiSelect2(items, i, right2, N2, this.compareMinY);
 
             for (j = i; j <= right2; j += N2) {
 
@@ -527,6 +527,53 @@ function multiSelect(arr, left, right, n, compare) {
 
         stack.push(left, mid, mid, right);
     }
+}
+
+function multiSelect2(arr, left, right, n, compare) {
+    // debugger;
+    var startLeft = left,
+        stack = [left, right],
+        k, p, k1;
+
+    while (stack.length) {
+        right = stack.pop();
+        left = stack.pop();
+
+        k1 = Math.floor((right - startLeft) / n);
+        k = k1 - Math.floor((left - startLeft) / n);
+
+        if (left >= right || k < 1) continue;
+
+        // console.log('searching ' + k + ' ' + n + '-th ranked between ' + left + ' & ' + right);
+
+        if (k === 1) {
+            // console.log('selecting ' + (startLeft + k1 * n) + ' between ' + left + ' & ' + right);
+            // console.count('select');
+            select(arr, left, right, startLeft + k1 * n, compare);
+            continue;
+        }
+
+        p = Math.floor((left + right) / 2);
+        p = partition(arr, left, right, p, compare);
+
+        stack.push(left, p - 1, p + 1, right);
+    }
+}
+
+function partition(arr, left, right, pivot, compare) {
+    var value = arr[pivot];
+
+    swap(arr, pivot, right);
+
+    for (var i = left; i < right; i++) {
+        if (compare(arr[i], value) < 0) {
+            swap(arr, i, left);
+            left++;
+        }
+    }
+    swap(arr, right, left);
+
+    return left;
 }
 
 // sort array between left and right (inclusive) so that the smallest k elements come first (unordered)
