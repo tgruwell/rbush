@@ -1,0 +1,121 @@
+<html>
+<head>
+	<title>Testing</title>
+	<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="rbush.js"></script>
+
+	<script>
+		var SVG = {
+			new: function(tagName){
+				return document.createElementNS("http://www.w3.org/2000/svg", tagName)
+			}
+		}
+
+		var domContainer = null;
+
+		$(document).ready(function(){
+			domContainer = $(SVG.new("svg"))
+				.attr("id", "viewport")
+				.attr("height", 768)
+				.attr("width", 1024)
+				.css({position: "absolute"})
+				.appendTo("#main");
+		});
+
+		function drawLine(p1, p2, color){
+			if(!color){
+				var color = "0,0,0";
+			}
+			$(SVG.new("line")).attr({
+				x1: p1[0], 
+				y1: p1[1], 
+				x2: p2[0], 
+				y2: p2[1],
+				style: "stroke:rgb("+color+");stroke-width:1"})
+			.appendTo(domContainer);
+		}
+
+		function drawBox(p, color){
+			if(!color){
+				var color = "0,0,255";
+			}
+
+			var x1 = p[0];
+			var y1 = p[1];
+			var x2 = p[2];
+			var y2 = p[3];
+
+			drawLine([x1,y1],[x2,y1], color);
+			drawLine([x2,y1],[x2,y2], color);
+			drawLine([x2,y2],[x1,y2], color);
+			drawLine([x1,y2],[x1,y1], color);
+		}
+
+		function box(x, y, w, h){
+			return [x, y, x+w, y+h];
+		}
+
+		function randomItems(count){
+			var items = [];
+			var spread = 400;
+			var size = 80
+			for(var i=0; i<count; i++){
+				var x = Math.random()*spread;
+				var y = Math.random()*spread;
+				var w = Math.random()*size;
+				var h = Math.random()*size;
+				items.push([x, y, x+w, y+h]);
+			}
+			return items;
+		}
+
+		function renderTree(data){
+			drawBox(data.bbox);
+			for(var i=0; i<data.children.length; i++){
+				if(data.leaf){
+					drawBox(data.children[i], "255,0,0");
+				}else{
+					renderTree(data.children[i]);
+				}
+			}
+		}
+	</script>
+
+	<script>
+
+		$(document).ready(function(){
+			var tree = rbush(50);
+
+			var items = [
+				box(20, 40, 50, 50),
+				box(10, 10, 10, 10)
+			];
+
+			items = randomItems(100);
+
+			for(var i=0; i<items.length; i++){
+				tree.insert(items[i]);
+			//	drawBox(items[i]);
+			}
+
+			var criteria = box(0, 21, 40, 40);
+			//drawBox(criteria, "0,255,0");
+			var result = tree.search(criteria);
+
+			// for(var i=0; i<result.length; i++){
+			// 	drawBox(result[i], "255,0,0");
+			// }
+			renderTree(tree.toJSON());
+			console.log(tree.toJSON());
+
+
+
+		});
+	</script>
+</head>
+<body>
+	<div id="main" style="position: relative; overlow: auto;">
+
+	</div>
+</body>
+</html>
