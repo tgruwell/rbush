@@ -24,19 +24,27 @@ SceneManager.prototype = {
 		pointLight2.position.set(-4, 2, -4);
 		this.viewport.scene.add(pointLight2);
 	},
+	
+	getScale: function(){
+		return 0.02;
+	},
 
 	addBox: function(params, color){
 		if(!color || color == "0,0,255"){
 			var color = 0x0000FF;
 		}else if(color == "255,0,0"){
 			var color = 0xFF0000;
+		}else if(color == "0,255,0"){
+			var color = 0x00FF00;
+		}else if(color == "220,220,220"){
+			var color = 0xDDDDDD;
 		}
 		var material = new THREE.MeshBasicMaterial({
 				transparent: true,
 				opacity: 0
 			});
 		
-		var scale = 0.02;
+		var scale = this.getScale();
 
 		var x1 = params[0]*scale;
 		var y1 = params[1]*scale;

@@ -91,16 +91,20 @@
 			return items;
 		}
 
-		function renderTree(data){
+		function renderTree(data, faded){
 			drawBox(data.bbox);
 			for(var i=0; i<data.children.length; i++){
 				if(data.leaf){
-					drawBox(data.children[i], "255,0,0");
+					drawBox(data.children[i], (faded ? "220,220,220" : "255,0,0"));
 				}else{
-					renderTree(data.children[i]);
+					renderTree(data.children[i], faded);
 				}
 			}
 
+		}
+
+		function boxCenter(box){
+			return [box[0]+(box[3]-box[0])/2,box[1]+(box[4]-box[1])/2,box[2]+(box[5]-box[2])/2];
 		}
 	</script>
 
@@ -117,21 +121,28 @@
 			];
 
 			items = randomItems(100);
+			tree.load(items);
 
-			for(var i=0; i<items.length; i++){
-				tree.insert(items[i]);
-			//	drawBox(items[i]);
-			}
+			// for(var i=0; i<items.length; i++){
+			// 	tree.insert(items[i]);
+			// //	drawBox(items[i]);
+			// }
 
-			var criteria = box(0, 21, 0, 40, 40, 50);
-			//drawBox(criteria, "0,255,0");
+			var criteria = box(10, 121, 130, 80, 80, 80);
+			drawBox(criteria, "0,255,0");
 			var result = tree.search(criteria);
 
-			// for(var i=0; i<result.length; i++){
-			// 	drawBox(result[i], "255,0,0");
-			// }
-			renderTree(tree.toJSON());
-			console.log(tree.toJSON());
+			 for(var i=0; i<result.length; i++){
+				drawBox(result[i], "255,0,0");
+			 }
+
+
+			var cameraFocus = boxCenter(criteria);
+			sm.viewport.controls.target.x = -cameraFocus[0]*sm.getScale();
+			sm.viewport.controls.target.y = -cameraFocus[1]*sm.getScale();
+			sm.viewport.controls.target.z = -cameraFocus[2]*sm.getScale();
+			renderTree(tree.toJSON(), true);
+			console.log(result.length);
 
 
 
