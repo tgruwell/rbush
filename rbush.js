@@ -445,6 +445,7 @@ rbush.prototype = {
 
         this.compareMinX = new Function('a', 'b', compareArr.join(format[0]));
         this.compareMinY = new Function('a', 'b', compareArr.join(format[1]));
+        this.compareMinZ = new Function('a', 'b', compareArr.join(format[2]));
 
         this.toBBox = new Function('a', 'return [a' + format.join(', a') + '];');
     }
