@@ -217,24 +217,33 @@ rbush.prototype = {
 
         // split the items into M mostly square tiles
 
-        var N2 = Math.ceil(N / M),
+        var N3 = Math.ceil(N / M),
+            N2 = N3 * Math.ceil(Math.sqrt(M)),
             N1 = N2 * Math.ceil(Math.sqrt(M)),
-            i, j, right2, right3;
+            i, j, k, right2, right3, right4;
 
-        multiSelect(items, left, right, N1, this.compareMinX);
+        multiSelect(items, left, right, N1, this.compareMinZ);
 
         for (i = left; i <= right; i += N1) {
 
             right2 = Math.min(i + N1 - 1, right);
 
-            multiSelect(items, i, right2, N2, this.compareMinY);
+            multiSelect(items, i, right2, N2, this.compareMinX);
 
             for (j = i; j <= right2; j += N2) {
 
                 right3 = Math.min(j + N2 - 1, right2);
 
-                // pack each entry recursively
-                node.children.push(this._build(items, j, right3, height - 1));
+          		multiSelect(items, j, right3, N3, this.compareMinY);
+
+                for(k = j; k <= right3; k += N3) {
+
+                	right4 = Math.min(k + N3 - 1, right3);
+
+	                // pack each entry recursively
+	                node.children.push(this._build(items, k, right4, height - 1));
+                }
+
             }
         }
 
