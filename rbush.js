@@ -161,6 +161,7 @@ rbush.prototype = {
 
     compareMinX: function (a, b) { return a[0] - b[0]; },
     compareMinY: function (a, b) { return a[1] - b[1]; },
+    compareMinZ: function (a, b) { return a[2] - b[2]; },
 
     toJSON: function () { return this.data; },
 
@@ -373,12 +374,15 @@ rbush.prototype = {
 
         var compareMinX = node.leaf ? this.compareMinX : compareNodeMinX,
             compareMinY = node.leaf ? this.compareMinY : compareNodeMinY,
+            compareMinZ = node.leaf ? this.compareMinZ : compareNodeMinZ,
             xMargin = this._allDistMargin(node, m, M, compareMinX),
-            yMargin = this._allDistMargin(node, m, M, compareMinY);
+            yMargin = this._allDistMargin(node, m, M, compareMinY),
+            zMargin = this._allDistMargin(node, m, M, compareMinZ);
 
         // if total distributions margin value is minimal for x, sort by minX,
-        // otherwise it's already sorted by minY
-        if (xMargin < yMargin) node.children.sort(compareMinX);
+        // if it is minimal for z, sort by minZ, otherwise it's already sorted by minY
+        if (xMargin < yMargin && xMargin < zMargin) node.children.sort(compareMinX);
+        if (zMargin < yMargin && zMargin < xMargin) node.children.sort(compareMinZ);
     },
 
     // total margin of all possible split distributions where each node is at least m full
@@ -464,49 +468,60 @@ function distBBox(node, k, p, toBBox) {
     return bbox;
 }
 
-function empty() { return [Infinity, Infinity, -Infinity, -Infinity]; }
+function empty() { return [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity]; }
 
 function extend(a, b) {
     a[0] = Math.min(a[0], b[0]);
     a[1] = Math.min(a[1], b[1]);
-    a[2] = Math.max(a[2], b[2]);
+    a[2] = Math.min(a[2], b[2]);
     a[3] = Math.max(a[3], b[3]);
+    a[4] = Math.max(a[4], b[4]);
+    a[5] = Math.max(a[5], b[5]);
     return a;
 }
 
 function compareNodeMinX(a, b) { return a.bbox[0] - b.bbox[0]; }
 function compareNodeMinY(a, b) { return a.bbox[1] - b.bbox[1]; }
+function compareNodeMinZ(a, b) { return a.bbox[2] - b.bbox[2]; }
 
-function bboxArea(a)   { return (a[2] - a[0]) * (a[3] - a[1]); }
-function bboxMargin(a) { return (a[2] - a[0]) + (a[3] - a[1]); }
+function bboxArea(a)   { return (a[3] - a[0]) * (a[4] - a[1]) * (a[5] - a[2]); }
+function bboxMargin(a) { return (a[2] - a[0]) + (a[3] - a[1]) + (a[5] - a[2]); }
 
 function enlargedArea(a, b) {
-    return (Math.max(b[2], a[2]) - Math.min(b[0], a[0])) *
-           (Math.max(b[3], a[3]) - Math.min(b[1], a[1]));
+    return (Math.max(b[3], a[3]) - Math.min(b[0], a[0])) *
+           (Math.max(b[4], a[4]) - Math.min(b[1], a[1])) *
+           (Math.max(b[5], a[5]) - Math.min(b[2], a[2]));
 }
 
 function intersectionArea (a, b) {
     var minX = Math.max(a[0], b[0]),
         minY = Math.max(a[1], b[1]),
-        maxX = Math.min(a[2], b[2]),
-        maxY = Math.min(a[3], b[3]);
+        minZ = Math.max(a[2], b[2]),
+        maxX = Math.min(a[3], b[3]),
+        maxY = Math.min(a[4], b[4]),
+        maxZ = Math.min(a[5], b[5]);
 
     return Math.max(0, maxX - minX) *
-           Math.max(0, maxY - minY);
+           Math.max(0, maxY - minY) *
+           Math.max(0, maxZ - minZ);
 }
 
 function contains(a, b) {
     return a[0] <= b[0] &&
            a[1] <= b[1] &&
            b[2] <= a[2] &&
-           b[3] <= a[3];
+           b[3] <= a[3] &&
+           b[4] <= a[4] &&
+           b[5] <= a[5];
 }
 
 function intersects (a, b) {
-    return b[0] <= a[2] &&
-           b[1] <= a[3] &&
-           b[2] >= a[0] &&
-           b[3] >= a[1];
+    return b[0] <= a[3] &&
+           b[1] <= a[4] &&
+           b[2] <= a[5] &&
+           b[3] >= a[0] &&
+           b[4] >= a[1] &&
+           b[5] >= a[2];
 }
 
 // sort an array so that items come in groups of n unsorted items, with groups sorted between each other;

@@ -4,6 +4,15 @@
 	<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 	<script src="rbush.js"></script>
 
+	<script src="3D/util.js"></script>
+	<script src="3D/Three.min.js"></script>
+	<script src="3D/OrbitControls.js"></script>
+	<script src="3D/Draw.js"></script>
+	<script src="3D/Viewport.js"></script>
+	<script src="3D/PackingViewport.js"></script>
+	<script src="3D/HUD.js"></script>
+	<script src="3D/SceneManager.js"></script>
+
 	<script>
 		var SVG = {
 			new: function(tagName){
@@ -12,6 +21,7 @@
 		}
 
 		var domContainer = null;
+		var sm = null;
 
 		$(document).ready(function(){
 			domContainer = $(SVG.new("svg"))
@@ -20,6 +30,12 @@
 				.attr("width", 1024)
 				.css({position: "absolute"})
 				.appendTo("#main");
+
+			var view = new PackingViewport({renderTo: "#main3d", vertMargin: 100});
+			
+			sm = new SceneManager();
+			sm.attachTo(view);
+			
 		});
 
 		function drawLine(p1, p2, color){
@@ -42,17 +58,21 @@
 
 			var x1 = p[0];
 			var y1 = p[1];
-			var x2 = p[2];
-			var y2 = p[3];
+			var z1 = p[2];
+			var x2 = p[3];
+			var y2 = p[4];
+			var z2 = p[5];
 
 			drawLine([x1,y1],[x2,y1], color);
 			drawLine([x2,y1],[x2,y2], color);
 			drawLine([x2,y2],[x1,y2], color);
 			drawLine([x1,y2],[x1,y1], color);
+
+			sm.addBox([x1,y1,z1,x2,y2,z2], color);
 		}
 
-		function box(x, y, w, h){
-			return [x, y, x+w, y+h];
+		function box(x, y, z, w, h, l){
+			return [x, y, z, x+w, y+h, z+l];
 		}
 
 		function randomItems(count){
@@ -62,9 +82,11 @@
 			for(var i=0; i<count; i++){
 				var x = Math.random()*spread;
 				var y = Math.random()*spread;
+				var z = Math.random()*spread;
 				var w = Math.random()*size;
 				var h = Math.random()*size;
-				items.push([x, y, x+w, y+h]);
+				var l = Math.random()*size;
+				items.push([x, y, z, x+w, y+h, z+l]);
 			}
 			return items;
 		}
@@ -78,17 +100,20 @@
 					renderTree(data.children[i]);
 				}
 			}
+
 		}
 	</script>
 
 	<script>
 
 		$(document).ready(function(){
-			var tree = rbush(50);
+			var tree = rbush(20);
 
 			var items = [
-				box(20, 40, 50, 50),
-				box(10, 10, 10, 10)
+				box(20, 40, 0, 50, 50, 40),
+				box(10, 10, 10, 10, 10, 15),
+				box(30, 20, 50, 20, 20, 25),
+				box(10, 20, 80, 25, 20, 30)
 			];
 
 			items = randomItems(100);
@@ -98,7 +123,7 @@
 			//	drawBox(items[i]);
 			}
 
-			var criteria = box(0, 21, 40, 40);
+			var criteria = box(0, 21, 0, 40, 40, 50);
 			//drawBox(criteria, "0,255,0");
 			var result = tree.search(criteria);
 
@@ -115,6 +140,9 @@
 </head>
 <body>
 	<div id="main" style="position: relative; overlow: auto;">
+
+	</div>
+	<div id="main3d" style="position: relative; overlow: auto;">
 
 	</div>
 </body>
